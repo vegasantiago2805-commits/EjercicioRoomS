@@ -3,6 +3,7 @@ package com.mexiti.costogasolina.navigation
 import com.mexiti.costogasolina.ui.views.DeleteView
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.mexiti.costogasolina.ui.views.EditView
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
