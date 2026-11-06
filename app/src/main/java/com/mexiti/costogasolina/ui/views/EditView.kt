@@ -58,8 +58,7 @@ fun EditView(
     transactionId: Int,
     navController: NavController,
     viewModel: GasolineViewModel,
-    modifier: Modifier = Modifier,
-    updateTransaction: GasolineViewModel.(GasolineTransaction) -> Unit
+    modifier: Modifier = Modifier
 ) {
     var transaction by remember { mutableStateOf<GasolineTransaction?>(null) }
     var isLoading by remember { mutableStateOf(true) }
