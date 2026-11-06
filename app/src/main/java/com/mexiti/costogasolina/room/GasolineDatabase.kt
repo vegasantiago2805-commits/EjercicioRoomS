@@ -6,10 +6,12 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.mexiti.costogasolina.model.GasolineTransaction
 
-@Database(entities = [GasolineTransaction::class], version = 1, exportSchema = false)
+@Database(entities = [GasolineTransaction::class], version =1, exportSchema = false)
 abstract class GasolineDatabase: RoomDatabase() {
+
     abstract fun gasolineDao(): GasolineDao
 
+    //Es un patrón singleton y asegura que solo se cree una instancia de la base de datos
     companion object {
         @Volatile
         private var INSTANCE: GasolineDatabase? = null
@@ -26,4 +28,5 @@ abstract class GasolineDatabase: RoomDatabase() {
             }
         }
     }
+
 }

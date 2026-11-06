@@ -1,24 +1,23 @@
 package com.mexiti.costogasolina.ui.views
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,14 +25,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.mexiti.costogasolina.R
-import com.mexiti.costogasolina.domain.calcularMonto
 import com.mexiti.costogasolina.model.GasolineTransaction
 import com.mexiti.costogasolina.ui.components.MainTitle
 import com.mexiti.costogasolina.viewmodel.GasolineViewModel
@@ -45,7 +39,6 @@ fun HomeView(
     viewModel: GasolineViewModel,
     modifier: Modifier = Modifier
 ) {
-    // Escuchar la lista de transacciones desde Room
     val transactions by viewModel.transaction.collectAsState()
 
     Scaffold(
@@ -69,36 +62,48 @@ fun HomeView(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Agregar Carga"
+                    contentDescription = "Agregar carga"
                 )
             }
         }
     ) { innerPadding ->
         if (transactions.isEmpty()) {
-            // Estado vacío cuando no existen datos grabados
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
+                    .padding(innerPadding)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = "No hay cargas registradas.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = "Pulsa + para agregar tu primera carga de gasolina."
                 )
             }
         } else {
-            // Lista de registros
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
-                contentPadding = PaddingValues(16.dp),
+                    .padding(innerPadding)
+                    .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(transactions) { item ->
-                    TransactionCard(transaction = item)
+                items(
+                    items = transactions,
+                    key = { it.id }
+                ) { transaction ->
+                    TransactionCard(
+                        transaction = transaction,
+                        onEditClick = {
+                            navController.navigate("EditView/${transaction.id}")
+                        },
+                        onDeleteClick = {
+                            navController.navigate("DeleteView/${transaction.id}")
+                        }
+                    )
                 }
             }
         }
@@ -106,83 +111,53 @@ fun HomeView(
 }
 
 @Composable
-fun TransactionCard(
+private fun TransactionCard(
     transaction: GasolineTransaction,
-    modifier: Modifier = Modifier
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
-    // Cálculo total reutilizando el dominio
-    val total = calcularMonto(
-        precio = transaction.pricePerLiter,
-        cantLitros = transaction.liters,
-        darPropina = transaction.tip > 0,
-        propina = transaction.tip
-    )
-
     ElevatedCard(
-        modifier = modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Encabezado: Fecha y Total destacado
+            Text(
+                text = "Carga del ${transaction.date}",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Text("Precio por litro: $${"%.2f".format(transaction.pricePerLiter)}")
+            Text("Litros: ${transaction.liters}")
+            Text("Propina: $${"%.2f".format(transaction.tip)}")
+            Text("Kilómetros: ${transaction.kilometers}")
+
+            val total = transaction.pricePerLiter * transaction.liters +
+                    transaction.tip
+
+            Text(
+                text = "Total: $${"%.2f".format(total)}",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.End
             ) {
-                Text(
-                    text = transaction.date,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = stringResource(R.string.monto_total, total),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+                IconButton(onClick = onEditClick) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Editar registro"
+                    )
+                }
 
-            Spacer(modifier = Modifier.height(2.dp))
-
-            // Detalle: Precio por litro y Litros
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Precio/L: $${transaction.pricePerLiter}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "Litros: ${transaction.liters} L",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-            // Muestra propina y kilometraje solo si tienen valores registrados (> 0)
-            if (transaction.tip > 0 || transaction.kilometers > 0) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    if (transaction.tip > 0) {
-                        Text(
-                            text = "Propina: $${transaction.tip}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.outline
-                        )
-                    }
-                    if (transaction.kilometers > 0) {
-                        Text(
-                            text = "Km: ${transaction.kilometers} km",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.outline
-                        )
-                    }
+                IconButton(onClick = onDeleteClick) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Eliminar registro"
+                    )
                 }
             }
         }
