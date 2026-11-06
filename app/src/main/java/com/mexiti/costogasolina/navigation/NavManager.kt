@@ -47,7 +47,7 @@ fun NavManager(dao: GasolineDao){
             EditView(
                 transactionId = id,
                 navController = navController,
-                viewModel = viewModel
+                viewModel = viewModel,
             )
         }
         composable(

@@ -60,9 +60,9 @@ fun AddView(
     modifier: Modifier = Modifier
 ) {
     CostGasLayout(
-        navController = navController,
+        navController,
         onSaveTransaction = { price, liters, tip, date, kilometers ->
-            viewModel.addTransaction(price, liters, tip, date, kilometers)
+            viewModel.addTransaction(price,liters,tip,date,kilometers)
         },
         modifier = modifier
     )
@@ -88,7 +88,9 @@ fun CostGasLayout(
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }) {
+                        onClick = {
+                            navController.popBackStack()
+                        }) {
                         // Icono de flecha de retroceso
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
@@ -107,14 +109,14 @@ fun CostGasLayout(
 
     ) { innerPadding ->
         CostGasContent(
-           onSaveTransaction = { price, liters, tip, date, kilometers ->
-                 onSaveTransaction(price,liters,tip,date,kilometers)
-               scope.launch {
-                   snackbarHostState.showSnackbar("✓ Registro guardado correctamente")
-                   delay(800)
-                   navController.popBackStack()
-               }
-           }
+            onSaveTransaction = { price, liters, tip, date, kilometers ->
+                onSaveTransaction(price,liters,tip,date,kilometers)
+                scope.launch {
+                    snackbarHostState.showSnackbar("✓ Registro guardado correctamente")
+                    delay(800)
+                    navController.popBackStack()
+                }
+            }
             ,
             modifier = Modifier.padding(innerPadding)
         )
@@ -273,11 +275,11 @@ fun CostGasLayoutPreview() {
     CostoGasolinaTheme {
         CostGasContent(
             onSaveTransaction = {
-                precio: Double,
-                litros: Double,
-                tip: Double,
-                date: String,
-                kilometers: Double ->
+                    precio: Double,
+                    litros: Double,
+                    tip: Double,
+                    date: String,
+                    kilometers: Double ->
             }
 
         )
